@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Video Player Series</title>
+    <!-- Use the Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body class="bg-gray-100 px-0 sm:p-4 md:p-8 flex flex-col items-center justify-center min-h-screen">
+
+    <!-- Main container for the player, styled as a card -->
+    <div class="bg-white p-0 sm:p-6 md:p-10 rounded-3xl shadow-xl max-w-4xl w-full">
+        <!-- Responsive iframe container for the video player -->
+        <div class="relative w-full pb-[56.25%] rounded-2xl overflow-hidden shadow-lg">
+            <iframe
+                class="absolute top-0 left-0 w-full h-full rounded-2xl"
+                id="video-player"
+                src="https://www.youtube.com/embed/M7lc1UVf-VE?enablejsapi=1&controls=0&rel=0"
+                title="Video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        <!-- Custom player controls container -->
+        <div id="player-controls" class="flex items-center justify-center mt-6 space-x-2 sm:space-x-4 hidden">
+            <!-- Rewind 5 seconds button -->
+            <button id="rewindBtn" class="p-2 sm:p-3 bg-gray-200 text-gray-600 rounded-full shadow-lg hover:bg-gray-300 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rewind">
+  <polygon points="11 19 2 12 11 5 11 19"></polygon>
+  <polygon points="22 19 13 12 22 5 22 19"></polygon>
+</svg>
+            </button>
+            
+            <!-- Play/Pause button -->
+            <button id="playPauseBtn" class="p-3 sm:p-4 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8 hidden" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5 0a1 1 0 012 0v4a1 1 0 11-2 0V8z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            
+            <!-- Fast-forward 5 seconds button -->
+            <button id="fastForwardBtn" class="p-2 sm:p-3 bg-gray-200 text-gray-600 rounded-full shadow-lg hover:bg-gray-300 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-fast-forward">
+  <polygon points="2 5 11 12 2 19 2 5"></polygon>
+  <polygon points="13 5 22 12 13 19 13 5"></polygon>
+</svg>
+            </button>
+        </div>
+
+        <!-- Yes/No buttons container (initially hidden) -->
+        <div id="choiceControls" class="flex flex-col items-center justify-center mt-6 space-y-4 hidden">
+            <div id="buttonContainer" class="flex flex-wrap justify-center gap-4">
+                <!-- Buttons will be added here dynamically by JavaScript -->
+            </div>
+        </div>
+
+        <!-- End of series message container (initially hidden) -->
+        <div id="endMessage" class="mt-6 text-center text-gray-600 hidden">
+            <p class="text-lg font-semibold">You have completed the topic.</p>
+        </div>
+    </div>
+
+<script>
+    // This variable will hold the YouTube player object
+    var player;
+    // The current video ID being played
+    var currentVideoId;
+    // The timer for checking the video time
+    var timeCheckTimer;
+
+    // The hardcoded video series
+    const videoData = {
+        "initialVideoId": "M7lc1UVf-VE",
+        "videoSeries": {
+            "M7lc1UVf-VE": {
+                "options": [
+                    { "label": "Yes", "nextVideoId": "8kHM8shx9N4" },
+                    { "label": "No", "nextVideoId": "q1-shkdB-PI" }
+                ]
+            },
+            "8kHM8shx9N4": {
+                "options": [
+                    { "label": "A", "nextVideoId": "Eaou4GIrLPQ" },
+                    { "label": "B", "nextVideoId": "y-j88bX6v0Y" },
+                    { "label": "C", "nextVideoId": "9X_ViIPA-zk" }
+                ],
+                "correctAnswer": "A"
+            },
+            "q1-shkdB-PI": {
+                "options": [
+                    { "label": "A", "nextVideoId": "r_A0B8yJg0A" },
+                    { "label": "B", "nextVideoId": "o-L4i3W31yU" },
+                    { "label": "C", "nextVideoId": "8kHM8shx9N4" },
+                    { "label": "D", "nextVideoId": null }
+                ],
+                "correctAnswer": "B"
+            },
+            "r_A0B8yJg0A": {
+                "options": [
+                    { "label": "A", "nextVideoId": "y-j88bX6v0Y" },
+                    { "label": "B", "nextVideoId": null }
+                ]
+            },
+            "y-j88bX6v0Y": {
+                "options": [
+                    { "label": "OK", "nextVideoId": null }
+                ]
+            },
+            "9X_ViIPA-zk": {
+                "options": [
+                    { "label": "Watch Again", "nextVideoId": "M7lc1UVf-VE" },
+                    { "label": "End", "nextVideoId": null }
+                ]
+            },
+            "o-L4i3W31yU": {
+                "options": [
+                    { "label": "A", "nextVideoId": null },
+                    { "label": "B", "nextVideoId": "8kHM8shx9N4" }
+                ],
+                "correctAnswer": "A"
+            }
+        }
+    };
+    
+    const PAUSE_TIME = 10;
+
+    // This function is automatically called by the YouTube IFrame Player API when it's ready.
+    function onYouTubeIframeAPIReady() {
+        // Create a single player instance
+        player = new YT.Player('video-player', {
+            videoId: videoData.initialVideoId,
+            playerVars: {
+                'enablejsapi': 1,
+                'controls': 0,
+                'rel': 0
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    // Function that runs when the player is ready
+    function onPlayerReady(event) {
+        console.log('Player is ready!');
+        currentVideoId = videoData.initialVideoId;
+        addControlEventListeners();
+    }
+
+    // Function to handle changes in the player's state
+    function onPlayerStateChange(event) {
+        // Show player controls once the video starts playing
+        if (event.data !== YT.PlayerState.UNSTARTED) {
+            document.getElementById('player-controls').classList.remove('hidden');
+        }
+        
+        updatePlayPauseIcons();
+        if (event.data === YT.PlayerState.PLAYING) {
+            // Start the time check timer when the video is playing
+            if (!timeCheckTimer) {
+                timeCheckTimer = setInterval(checkVideoTime, 100);
+            }
+        } else {
+            // Clear the time check timer when the video is not playing
+            if (timeCheckTimer) {
+                clearInterval(timeCheckTimer);
+                timeCheckTimer = null;
+            }
+        }
+    }
+
+    // New function to check the video time and manage controls
+    function checkVideoTime() {
+        if (!player || !player.getCurrentTime) return;
+
+        const currentTime = player.getCurrentTime();
+        
+        if (currentTime >= PAUSE_TIME) {
+            player.pauseVideo();
+            document.getElementById('choiceControls').classList.remove('hidden');
+            generateChoiceButtons();
+        } else {
+            document.getElementById('choiceControls').classList.add('hidden');
+        }
+    }
+
+    // Function to generate the choice buttons dynamically
+    function generateChoiceButtons() {
+        const buttonContainer = document.getElementById('buttonContainer');
+        buttonContainer.innerHTML = ''; // Clear existing buttons
+
+        const videoInfo = videoData.videoSeries[currentVideoId];
+        const options = videoInfo?.options;
+        if (!options) {
+            // Handle the end of a video path gracefully
+            player.stopVideo();
+            document.getElementById('endMessage').classList.remove('hidden');
+            return;
+        }
+
+        options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = "px-6 py-2 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors";
+            button.textContent = option.label;
+            
+            button.addEventListener('click', () => {
+                const nextVideoId = option.nextVideoId;
+                if (nextVideoId) {
+                    player.loadVideoById(nextVideoId);
+                    currentVideoId = nextVideoId;
+                    document.getElementById('choiceControls').classList.add('hidden');
+                    document.getElementById('endMessage').classList.add('hidden');
+                } else {
+                    player.stopVideo();
+                    document.getElementById('choiceControls').classList.add('hidden');
+                    document.getElementById('endMessage').classList.remove('hidden');
+                }
+            });
+            buttonContainer.appendChild(button);
+        });
+    }
+
+    // Function to add event listeners to the custom controls
+    function addControlEventListeners() {
+        document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+        document.getElementById('rewindBtn').addEventListener('click', rewindVideo);
+        document.getElementById('fastForwardBtn').addEventListener('click', fastForwardVideo);
+    }
+
+    // Function to update the play/pause icons based on the player's state
+    function updatePlayPauseIcons() {
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        } else {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+    }
+
+    // The following functions now control the single player
+    function togglePlayPause() {
+        const currentTime = player.getCurrentTime();
+        if (currentTime < PAUSE_TIME) {
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+    }
+
+    function rewindVideo() {
+        const currentTime = player.getCurrentTime();
+        player.seekTo(currentTime - 5, true);
+    }
+
+    function fastForwardVideo() {
+        const currentTime = player.getCurrentTime();
+        if (currentTime < PAUSE_TIME) {
+            const newTime = currentTime + 5;
+            // Do not fast-forward beyond the 10-second mark
+            if (newTime < PAUSE_TIME) {
+                player.seekTo(newTime, true);
+            } else {
+                player.seekTo(PAUSE_TIME, true);
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
