@@ -1,1 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    // When Google redirects here, capture query params
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");   // or "id_token" depending on your flow
+      const error = params.get("error");
+
+      if (error) {
+        document.body.innerHTML = "Login failed: " + error;
+        return;
+      }
+
+      // Redirect back into your Android app via custom scheme
+      if (code) {
+        window.location.href = "myapp://auth/callback?code=" + code;
+      } else {
+        document.body.innerHTML = "No auth code received.";
+      }
+    };
+  </script>
+</head>
+<body>
+  Redirecting back to the app...
+</body>
+</html>
 
