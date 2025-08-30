@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Login Demo</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        text-align: center;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .login-btn {
+        background: #4285f4;
+        color: white;
+      }
+
+      .login-btn:hover {
+        background: #357ae8;
+      }
+
+      .logout-btn {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .logout-btn:hover {
+        background: #c0392b;
+      }
+
+      .user-info {
+        margin-top: 20px;
+      }
+
+      .user-info img {
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Google Login</h1>
+      <button class="login-btn" id="loginBtn">Login with Google</button>
+      <button class="logout-btn" id="logoutBtn" style="display: none">
+        Logout
+      </button>
+      <div class="user-info" id="user"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+      // Import Firebase modules
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+      // Firebase config (replace with yours)
+      const firebaseConfig = {
+        apiKey: "AIzaSyDNqfRczOHTukGdXDnuzVXjbL7P5blnyAo",
+        authDomain: "dbydx-ea226.firebaseapp.com",
+        projectId: "dbydx-ea226",
+        storageBucket: "dbydx-ea226.firebasestorage.app",
+        messagingSenderId: "329650707379",
+        appId: "1:329650707379:web:18bab2bab403e1004b89c6",
+        measurementId: "G-2F7YVE2X94",
+      };
+
+      // Init Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      // Elements
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userDiv = document.getElementById("user");
+
+      // Login
+      loginBtn.addEventListener("click", () => {
+        signInWithPopup(auth, provider)
+          .then((result) => {
+            console.log("User:", result.user);
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("Login failed");
+          });
+      });
+
+      // Logout
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth);
+      });
+
+      // Auth state observer (runs when login/logout happens)
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          userDiv.innerHTML = `
+          <p>Welcome <strong>${user.displayName}</strong></p>
+          <img src="${user.photoURL}" alt="Profile"/>
+        `;
+          loginBtn.style.display = "none";
+          logoutBtn.style.display = "block";
+        } else {
+          userDiv.innerHTML = "";
+          loginBtn.style.display = "block";
+          logoutBtn.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
